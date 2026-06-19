@@ -125,13 +125,52 @@ export class UserController {
             return res.status(500).json({ error: 'Failed to remove book from wishlist' });
         }
     }
-    
+    async requestDelivery(req, res) {
+        try {
+            const { userId, bookId } = req.body;
+
+
+            const result = await this.userService.requestDelivery(userId, bookId);
+
+
+
+            return res.status(200).json({
+                message: 'Delivery request submitted. Status: PENDING',
+                data: result
+            });
+        } catch (error) {
+            console.error("Error in requestDelivery controller:", error);
+            return res.status(500).json({ error: 'Failed to send delivery request' });
+        }
+    }
+    async adminApproveDelivery(req, res) {
+        try {
+            const { requestId } = req.body; // Pass the specific request ID to approve
+
+             
+            const result = await this.userService.approveDeliveryRequest(requestId);
+
+            if (!result) {
+                return res.status(404).json({ error: 'Delivery request not found' });
+            }
+
+            return res.status(200).json({
+                message: 'Request approved successfully. User notified.',
+                data: result
+            });
+        } catch (error) {
+            console.error("Error in adminApproveDelivery controller:", error);
+            return res.status(500).json({ error: 'Failed to approve delivery request' });
+        }
+    }
 }
 
-//delivary history
+
 //user comment
 //pending book
 //book read
 //pending delivary
 //total spent
 
+//request delivary
+//delivary history

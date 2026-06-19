@@ -63,4 +63,23 @@ export class UserService {
             .deleteOne({ userId: id, bookId: bookObjectId });
         return result;
     }
+    async requestDelivery(userId, bookId) {
+        return await this.database
+            .collection("deliveryRequests")
+            .create({
+                userId,
+                bookId,
+                status: 'PENDING',
+                createdAt: new Date()
+            });
+    }
+    async approveDeliveryRequest(requestId) {
+        const updatedRequest = await  this.database.collection("deliveryRequests").findByIdAndUpdate(
+            requestId,
+            { status: 'APPROVED', approvedAt: new Date() },
+            { new: true } 
+        );
+        if (!updatedRequest) return null;
+        return updatedRequest;
+    }
 }
