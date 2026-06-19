@@ -1,0 +1,22 @@
+{
+  "name": "book_appoitment_backend",
+  "version": "1.0.0",
+  "description": "this is a backend for book appointment",
+  "main": "main.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon main.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.33.0",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "mongodb": "^7.3.0",
+    "nodemon": "^3.1.14"
+  }
+}
