@@ -3,7 +3,7 @@ export class BookService {
     constructor(database) {
         this.database = database;
     }
-    async movePendingToApproved(pendingId, action) { // Added 'action' parameter ("approved" or "rejected")
+    async movePendingToApproved(pendingId, action) {
         const id = new ObjectId(pendingId);
         console.log(`Processing pending book with ID: ${id}. Action: ${action}`);
 
@@ -11,10 +11,11 @@ export class BookService {
             .collection("pending_books")
             .findOne({ _id: id });
 
+        console.log("Pending Book:", pendingBook);
+
         if (!pendingBook) {
             return { success: false, reason: "Pending book not found" };
         }
-
 
         delete pendingBook._id;
         pendingBook.status = action;
@@ -25,6 +26,7 @@ export class BookService {
             await this.database
                 .collection("books")
                 .insertOne(pendingBook);
+                console.log("Book Inserted")
         } else if (action === "rejected") {
             await this.database
                 .collection("rejected_books")
@@ -37,7 +39,7 @@ export class BookService {
         await this.database
             .collection("pending_books")
             .deleteOne({ _id: id });
-
+          console.log("Pending Book Deleted")
         return { success: true };
     }
    
