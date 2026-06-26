@@ -1,3 +1,13 @@
+
+import { OAuth2Client } from "google-auth-library";
+
+
+console.log("process.env.GOOGLE_CLIENT_ID", process.env.GOOGLE_CLIENT_ID)
+const client = new OAuth2Client(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    "postmessage"
+);
 export class UserController {
     constructor(userService, database) {
         this.userService = userService;
@@ -5,37 +15,80 @@ export class UserController {
     }
 
     async createUser(req, res) {
+        console.log("createUser");
         try {
-            const databas = this.database.collection("users")
+            const databas = this.database.collection("users");
             const userData = req.body;
+
             if (!userData.name || !userData.email || !userData.password) {
                 return res.status(400).json({ error: 'Missing required fields' });
             }
-
             if (await databas.findOne({ email: userData.email })) {
                 return res.status(409).json({ error: 'Email already exists' });
             }
 
-            if (await databas.findOne({ name: userData.name })) {
-                return res.status(409).json({ error: 'Name already exists' });
-            }
-
             const newUser = await this.userService.createuser(userData);
-            res.status(201).json(newUser);
+            console.log("newUser sent to frontend:", newUser);
+            res.status(201).json({ user: newUser });
+
         } catch (error) {
+            console.error("Controller Error:", error);
             res.status(500).json({ error: 'Failed to create user' });
         }
     }
-    async loginUser(req, res) {
+    async googleSignInController(req, res) {
         try {
+            const { name, email, image } = req.body;
+
+            let user = await this.database.collection("users").findOne({ email });
+
+            if (!user) {
+                const newUser = {
+                    name,
+                    email,
+                    picture: image,
+                    role: "user",
+                    createdAt: new Date(),
+                };
+
+                const result = await this.database
+                    .collection("users")
+                    .insertOne(newUser);
+
+                user = {
+                    _id: result.insertedId,
+                    ...newUser,
+                };
+            }
+
+            return res.status(200).json({
+                success: true,
+                user,
+            });
+
+        } catch (error) {
+            console.error(error);
+
+            return res.status(500).json({
+                success: false,
+                message: error.message,
+            });
+        }
+    }
+    async loginUser(req, res) {
+        console.log("loginUser")
+        try {
+            console.log("req.body", req.body)
             const { email, password } = req.body;
-            const token = await this.userService.loginuser(email, password);
-            res.status(200).json({ token });
+            const userInfo = await this.userService.loginuser(email, password);
+            console.log("token", userInfo)
+            res.status(200).json({ user: userInfo });
         } catch (error) {
             res.status(401).json({ error: 'Invalid credentials' });
         }
     }
     async getAllUsers(req, res) {
+        console.log("getAllUsers")
         try {
             //   const userData = req.body;
             //   if(!userData.role === "admin") {
@@ -128,8 +181,6 @@ export class UserController {
     async requestDelivery(req, res) {
         try {
             const { userId, bookId } = req.body;
-
-
             const result = await this.userService.requestDelivery(userId, bookId);
 
 
@@ -145,9 +196,9 @@ export class UserController {
     }
     async adminApproveDelivery(req, res) {
         try {
-            const { requestId } = req.body; // Pass the specific request ID to approve
+            const { requestId } = req.body;
 
-             
+
             const result = await this.userService.approveDeliveryRequest(requestId);
 
             if (!result) {
@@ -161,6 +212,21 @@ export class UserController {
         } catch (error) {
             console.error("Error in adminApproveDelivery controller:", error);
             return res.status(500).json({ error: 'Failed to approve delivery request' });
+        }
+    }
+    async getUserApprovedBooks(req, res) {
+        try {
+            const { userId } = req.params;
+            const approvedBooks = await this.userService.getApprovedBooksForUser(userId);
+            return res.status(200).json({
+                success: true,
+                count: approvedBooks.length,
+                books: approvedBooks
+            });
+
+        } catch (error) {
+            console.error("Error fetching user approved books:", error);
+            return res.status(500).json({ error: 'Failed to retrieve your books' });
         }
     }
 }
