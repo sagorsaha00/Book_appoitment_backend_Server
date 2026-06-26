@@ -5,11 +5,19 @@ export class UserService {
     }
 
     async createuser(userData) {
+        // 🛠️ Fixed typo: Changed "cosnole" to "console"
         const result = await this.database
             .collection("users")
             .insertOne(userData);
 
-        return result;
+        console.log("DB Insert Result:", result);
+
+        // ⚡ Instead of returning just the insert confirmation receipt, 
+        // we return the complete user object including the freshly generated mongo _id
+        return {
+            _id: result.insertedId,
+            ...userData
+        };
     }
     async loginuser(email, password) {
         const user = await this.database
@@ -74,12 +82,25 @@ export class UserService {
             });
     }
     async approveDeliveryRequest(requestId) {
-        const updatedRequest = await  this.database.collection("deliveryRequests").findByIdAndUpdate(
+        const updatedRequest = await this.database.collection("deliveryRequests").findByIdAndUpdate(
             requestId,
             { status: 'APPROVED', approvedAt: new Date() },
-            { new: true } 
+            { new: true }
         );
         if (!updatedRequest) return null;
         return updatedRequest;
     }
+    async getApprovedBooksForUser(userId) {
+        const records = await this.database.collection("deliveryRequests")
+            .find({
+                userId: userId,
+                status: "APPROVED"
+            })
+            .toArray();
+
+
+
+        return records;
+    }
+
 }
