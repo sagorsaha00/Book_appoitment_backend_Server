@@ -23,7 +23,7 @@ app.use(cors({
     allowedHeaders: ["Content-Type", "Authorization"],
 }));
 
- 
+
 app.options('*', cors());
 
 app.post("/api/checkout", async (req, res) => {
@@ -109,3 +109,5 @@ async function startServer() {
 }
 
 startServer();
+
+export default app;
