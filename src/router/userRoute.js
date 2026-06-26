@@ -16,6 +16,9 @@ router.post("/loginUser", userController.loginUser.bind(userController));
 router.get("/getAllUsers", userController.getAllUsers.bind(userController));
 router.delete("/deleteUser/:userId", userController.deleteUser.bind(userController));
 router.put("/updateUserRole/:userId", userController.updateUserRole.bind(userController));
+router.post("/googleSignIn", userController.googleSignInController.bind(userController));
+
+
 export default router;
 
 
