@@ -1,5 +1,28 @@
 import { ObjectId } from "mongodb";
-import Stripe from "stripe";
+import Stripe from "stripe"
+// import imagekit from '../services/imagekit.js'
+import dotenv from "dotenv";
+import { ImageKit } from "@imagekit/nodejs"; // 👈 এখান থেকে 'toFile' বাদ দিন, এটার প্রয়োজন নেই
+import multer from "multer";
+
+dotenv.config();
+
+const storage = multer.memoryStorage();
+export const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },  
+});
+
+const endpoint = (process.env.IMAGE_URL).replace(/\/$/, "");
+
+const imagekit = new ImageKit({
+  publicKey: process.env.IMAGEKIT_PUBLIC_KEY || process.env.PUBLIC_KEY,
+  privateKey: process.env.IMAGEKIT_PRIVATE_KEY || process.env.PRIVATE_KEY,
+  urlEndpoint: endpoint
+});
+
+ 
+
 
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -9,41 +32,80 @@ export class BookController {
         this.database = database;
     }
 async createPendingBook(req, res) {
-    try {
-        // রিকোয়েস্ট বডি থেকে useremail সহ সব ডাটা রিসিভ করা হলো
-        const { title, author, category, fee, librarian, date, image, useremail } = req.body;
 
-        // ভ্যালিডেশন মেকানিজম
-        if (!title || !author || !librarian || !image) {
-            return res.status(400).json({ error: 'Missing required fields (title, author, librarian, image)' });
+    try {
+
+        const {
+            title,
+            author,
+            category,
+            fee,
+            librarian,
+            date,
+            useremail,
+            image,
+        } = req.body || {};
+
+        console.log("BODY:", req.body);
+
+        // validation
+        if (
+            !title ||
+            !author ||
+            !librarian ||
+            !image
+        ) {
+            return res.status(400).json({
+                error: "Missing required fields",
+            });
         }
 
+        // create document
         const newPendingBook = {
             title,
             author,
             category,
-            fee: Number(fee) || 0, // সেফ সাইড থাকার জন্য নিউমেরিক রূপান্তর
+            fee: Number(fee) || 0,
             librarian,
-            image, // ডাটাবেজে ইমেজের লিঙ্ক সেভ হচ্ছে
-            date: date ? new Date(date) : new Date(), // ২০২৬ কারেন্ট ডেট ব্যাকআপ লজিক
+            image, // Uploadcare CDN URL
+            date: date
+                ? new Date(date)
+                : new Date(),
+            librarianEmail: useremail,
             status: "pending",
-            librarianEmail: useremail, // এখানে useremail-এর ভ্যালু ডাটাবেজে সেভ হবে
-            processedAt: new Date()
+            processedAt: new Date(),
         };
-        console.log("newPendingBook", newPendingBook)
 
+        console.log(
+            "Saving Document:",
+            newPendingBook
+        );
+
+        // save to mongodb
         const result = await this.database
             .collection("pending_books")
             .insertOne(newPendingBook);
 
         return res.status(201).json({
-            message: 'Book submitted successfully for admin approval',
-            pendingId: result.insertedId
+            success: true,
+            message:
+                "Book submitted successfully",
+            pendingId: result.insertedId,
+            imageUrl: image,
         });
-        
+
     } catch (error) {
-        console.error("Create Book Error:", error);
-        return res.status(500).json({ error: 'Failed to submit book due to internal server error' });
+
+        console.error(
+            "Create Pending Book Error:",
+            error
+        );
+
+        return res.status(500).json({
+            error:
+                "Internal server error",
+            details: error?.message,
+        });
     }
 }
     async getAllPendingBooks(req, res) {
@@ -784,6 +846,46 @@ getBookAll = async (req, res) => {
         });
     }
 }
+getTransactionId = async (req,res) => {
+   const transactions = await this.database.collection("sales")
+    .find(
+        { status: "completed" },
+        {
+            projection: {
+                _id: 0,
+                transaction_id: 1
+            }
+        }
+    )
+    .toArray();
+ return res.status(200).json({
+      success: true,
+            data: transactions,
+          
+ })
+console.log(transactions);
+};
+ salesvaryfiy= async (req, res) => {
+    try {
+        const { bookId, email } = req.query;
+        if (!bookId || !email) return res.status(400).json({ error: "Missing parameters" });
+
+        const purchase = await db.collection("sales").findOne({
+            bookId: bookId,
+            userEmail: email,
+            status: "completed"
+        });
+
+        if (!purchase) {
+            return res.status(404).json({ message: "No completed purchase found" });
+        }
+
+        return res.status(200).json(purchase);
+    } catch (error) {
+        return res.status(500).json({ error: "Verification processing failed" });
+    }
+};
+
 }
 
 

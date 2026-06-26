@@ -37,4 +37,6 @@ router.delete("/deleteComment/:commentId", bookController.deleteComment);
 router.post("/getReadingList", bookController.getReadingList);
 router.get("/allCategory", bookController.getBookCat)
 router.get("/getAllBook", bookController.getBookAll)
+router.get('/getTransactionId', bookController.getTransactionId)
+router.get('/sales/verify', bookController.salesvaryfiy)
 export default router;
