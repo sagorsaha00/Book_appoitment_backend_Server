@@ -19,7 +19,7 @@ app.use(express.json())
 
 app.use(cors(
     {
-        origin: "*",
+        origin: "https://ele-books.vercel.app",
         methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
         allowedHeaders: ["Content-Type", "Authorization"],
     }
@@ -50,8 +50,8 @@ app.post("/api/checkout", async (req, res) => {
                 librarianEmail: bookOwnerEmail
             },
 
-            success_url: `http://localhost:3000/payment-success?session_id={CHECKOUT_SESSION_ID}&bookId=${bookId}`,
-            cancel_url: `http://localhost:3000/cancel`,
+            success_url: `https://ele-books.vercel.app/payment-success?session_id={CHECKOUT_SESSION_ID}&bookId=${bookId}`,
+            cancel_url: `https://ele-books.vercel.app/cancel`,
         });
 
 
