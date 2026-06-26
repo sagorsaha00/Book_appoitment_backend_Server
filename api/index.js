@@ -3,10 +3,10 @@ import express from "express"
 import cors from "cors"
 import Stripe from "stripe";
 import { ImageKit } from "@imagekit/nodejs";
-import { db } from "./src/database/connection.js"
-import userRouter from "./src/router/userRoute.js"
-import bookRouter from "./src/router/bookRouter.js"
-import libarianRouter from "./src/router/libarianRouter.js"
+import { db } from "../src/database/connection.js"
+import userRouter from "../src/router/userRoute.js"
+import bookRouter from "../src/router/bookRouter.js"
+import libarianRouter from "../src/router/libarianRouter.js"
 import { toNodeHandler } from "better-auth/node";
 
 
@@ -22,9 +22,6 @@ app.use(cors({
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
 }));
-
-
-app.options('*', cors());
 
 app.post("/api/checkout", async (req, res) => {
     try {
@@ -102,7 +99,6 @@ app.use("/libarian", libarianRouter)
 
 async function startServer() {
     await db();
-
     app.listen(PORT, () => {
         console.log(`Server is running on port ${PORT}`);
     });
