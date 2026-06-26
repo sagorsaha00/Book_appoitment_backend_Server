@@ -17,13 +17,14 @@ const PORT = process.env.PORT
 console.log("PORT", PORT)
 app.use(express.json())
 
-app.use(cors(
-    {
-        origin: "https://ele-books.vercel.app",
-        methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-        allowedHeaders: ["Content-Type", "Authorization"],
-    }
-))
+app.use(cors({
+    origin: "https://ele-books.vercel.app",
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+}));
+
+ 
+app.options('*', cors());
 
 app.post("/api/checkout", async (req, res) => {
     try {
