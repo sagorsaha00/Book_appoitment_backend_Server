@@ -6,11 +6,11 @@ export class LibrarianOrderController {
   }
   approveOrder = async (req, res) => {
     try {
-      const { orderId } = req.params;  
-      console.log("ordr",orderId)
+      const { orderId } = req.params;
+      console.log("ordr", orderId)
 
       const result = await this.database.collection("sales").updateOne(
-        { _id: new ObjectId(orderId), status: "pending" },  
+        { _id: new ObjectId(orderId), status: "pending" },
         { $set: { status: "approved", approvedAt: new Date() } }
       );
 
@@ -24,11 +24,13 @@ export class LibrarianOrderController {
     }
   };
   dispatchOrder = async (req, res) => {
+    console.log("dispatchOrder")
+
     try {
       const { orderId } = req.params;
-
+      console.log("orderId", orderId)
       const result = await this.database.collection("sales").updateOne(
-        { _id: new ObjectId(orderId), status: "approved" }, // শুধুমাত্র approved অর্ডারই dispatch করা যাবে
+        { _id: new ObjectId(orderId), status: "approved" },
         { $set: { status: "dispatched", dispatchedAt: new Date() } }
       );
 
@@ -63,4 +65,3 @@ export class LibrarianOrderController {
   };
 }
 
- 
