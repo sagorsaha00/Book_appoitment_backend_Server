@@ -18,7 +18,7 @@ console.log("PORT", PORT)
 app.use(express.json())
 
 app.use(cors({
-    origin: "https://ele-books.vercel.app",
+    origin: ["https://ele-books.vercel.app", "http://localhost:3000"],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
 }));
